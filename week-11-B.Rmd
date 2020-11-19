@@ -42,11 +42,53 @@ week_11_folds <- vfold_cv(week_11_train, v = 5)
 
 * Do things change if we start using all the data? Is there a danger in doing so?
 
+```{r sc1}
+
+
+simple_1 <- recipe(primary_06 ~ treatment,
+       data = week_11_train) %>%
+  step_dummy(all_nominal())
+
+wfl_1 <- workflow() %>%
+  add_model(linear_reg() %>%
+              set_engine("lm") %>%
+              set_mode("regression")) %>%
+  add_recipe(simple_1)
+
+
+full_2 <- recipe(primary_06 ~ treatment + sex + age,
+       data = week_11_train) %>%
+  step_interact(~age:sex) %>%
+  step_dummy(all_nominal())
+
+wfl_2 <- workflow() %>%
+  add_model(linear_reg() %>%
+              set_engine("lm") %>%
+              set_mode("regression")) %>%
+  add_recipe(full_2)
+
+
+
+```
+
+
+
 
 ## Scene 2
 
 **Prompt:** Compare your two models using cross-validation.
 
+```{r}
+wfl_1 %>%
+  fit_resamples(resamples = week_11_folds) %>%
+  collect_metrics()
+
+wfl_2 %>%
+  fit_resamples(resamples = week_11_folds) %>%
+  collect_metrics()
+
+
+```
 
 ## Scene 3
 
