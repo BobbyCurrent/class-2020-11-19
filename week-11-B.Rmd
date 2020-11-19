@@ -46,26 +46,27 @@ week_11_folds <- vfold_cv(week_11_train, v = 5)
 
 
 simple_1 <- recipe(primary_06 ~ treatment,
-       data = week_11_train) %>%
-  step_dummy(all_nominal())
+       data = week_11_train) 
 
 wfl_1 <- workflow() %>%
   add_model(linear_reg() %>%
               set_engine("lm") %>%
               set_mode("regression")) %>%
-  add_recipe(simple_1)
+  add_recipe(simple_1 %>%
+               step_dummy(all_nominal()))
 
 
-full_2 <- recipe(primary_06 ~ treatment + sex + age,
-       data = week_11_train) %>%
-  step_interact(~age:sex) %>%
-  step_dummy(all_nominal())
+full_2 <- recipe(primary_06 ~ treatment + sex + age + primary_02 + primary_04,
+       data = week_11_train)
+  
 
-wfl_2 <- workflow() %>%
+wfl_2.5 <- workflow() %>%
   add_model(linear_reg() %>%
               set_engine("lm") %>%
               set_mode("regression")) %>%
-  add_recipe(full_2)
+  add_recipe(full_2 %>%
+               step_dummy(all_nominal()) %>%
+               step_interact(~starts_with("primary_02"):starts_with("primary_04")))
 
 
 
@@ -83,9 +84,14 @@ wfl_1 %>%
   fit_resamples(resamples = week_11_folds) %>%
   collect_metrics()
 
-wfl_2 %>%
+wfl_2.5 %>%
   fit_resamples(resamples = week_11_folds) %>%
   collect_metrics()
+
+
+wfl_1 %>%
+  fit(data = week_11_train)
+  
 
 
 ```
